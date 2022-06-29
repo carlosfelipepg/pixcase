@@ -1,0 +1,11 @@
+server:
+  port: ${port:8080}
+
+application:
+  name: ${name:@project.name@}
+
+spring:
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://root:root@localhost/pix-db?authSource=admin&retryWrites=false&w=majority&sslInvalidHostNameAllowed=true&ssl=false}
+      auto-index-creation: true
