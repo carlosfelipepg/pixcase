@@ -52,4 +52,9 @@ public class KeyRepositoryImpl implements KeyRepository {
 
         return mongoTemplate.find(query, Key.class);
     }
+
+    @Override
+    public Key findKeyById(String id) {
+        return mongoDbSchoolRepository.findKeyById(id);
+    }
 }

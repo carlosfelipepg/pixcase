@@ -1,6 +1,5 @@
 package com.casepix.pix.application.domain.service;
 
-import com.casepix.pix.application.domain.dto.KeyDto;
 import com.casepix.pix.application.domain.enumaration.TypeKeyEnum;
 import com.casepix.pix.application.domain.enumaration.TypePersonEnum;
 import com.casepix.pix.application.domain.filter.KeyFilter;
@@ -8,14 +7,12 @@ import com.casepix.pix.application.domain.model.Key;
 import com.casepix.pix.application.domain.repository.KeyRepository;
 import com.casepix.pix.application.mapper.KeyDomainMapper;
 import com.casepix.pix.application.rest.response.CreateResponse;
-import com.mongodb.MongoException;
-import com.mongodb.MongoWriteException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.internal.constraintvalidators.hv.br.CPFValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,6 +28,7 @@ public class PixService {
     @Autowired
     private KeyDomainMapper keyDomainMapper;
 
+    private CreateResponse response = new CreateResponse();
 
     /**
      * Create pix key for the informed account holder
@@ -39,7 +37,6 @@ public class PixService {
      * @return - Key creation status
      */
     public CreateResponse createKey(Key key) {
-        CreateResponse response = new CreateResponse();
         KeyFilter keyFilter = new KeyFilter();
         keyFilter.setNumberAccount(key.getNumberAccount());
         List<Key> keys = keyRepository.findKeysByFilter(keyFilter);
@@ -53,30 +50,9 @@ public class PixService {
             return response;
         }
 
-        // Validate keys format
-        if (key.getTypeKey() == TypeKeyEnum.CELULAR){
-            Boolean valid = validatePhoneRegex(key.getValueKey());
-            if (Boolean.FALSE.equals(valid)) {
-                response.setMessage("Número celular inválido");
-                response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
-                return response;
-            }
-        } else if (key.getTypeKey() == TypeKeyEnum.EMAIL) {
-            Boolean valid = validateEmailRegex(key.getValueKey());
-            if (Boolean.FALSE.equals(valid)) {
-                response.setMessage("E-mail inválido");
-                response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
-                return response;
-            }
-        } else if (key.getTypeKey() == TypeKeyEnum.CPF){
-            Boolean valid = validateCpfRegex(key.getValueKey());
-            if (Boolean.FALSE.equals(valid)) {
-                response.setMessage("CPF inválido");
-                response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
-                return response;
-            } else {
-                key.setValueKey(key.getValueKey().replaceAll("[.-]", ""));
-            }
+        validateTypeKey(key);
+        if (response.getStatus() != HttpStatus.OK) {
+            return response;
         }
 
         UUID uniqueId = UUID.randomUUID();
@@ -92,6 +68,57 @@ public class PixService {
         response.setMessage("Chave criada com sucesso");
         response.setId(uniqueId);
         return response;
+    }
+
+    /**
+     * Update pix key for the informed account holder
+     *
+     * @param key - Information object sent by the user
+     * @return - Key creation status
+     */
+    public ResponseEntity<Object> updateKey(Key key) {
+        response = new CreateResponse();
+        var savedKey = keyRepository.findKeyById(key.getId());
+        if (savedKey == null) {
+            response.setStatus(HttpStatus.NOT_FOUND);
+            response.setMessage("Chave não encontrada");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        keyDomainMapper.merge(key, savedKey);
+
+        validateTypeKey(savedKey);
+        if (response.getStatus() != HttpStatus.OK) {
+            return new ResponseEntity<>(response, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        keyRepository.save(savedKey);
+
+        return new ResponseEntity<>(savedKey, HttpStatus.OK);
+    }
+
+    private void validateTypeKey(Key key) {
+        // Validate keys format
+        if (key.getTypeKey() == TypeKeyEnum.CELULAR){
+            Boolean valid = validatePhoneRegex(key.getValueKey());
+            if (Boolean.FALSE.equals(valid)) {
+                response.setMessage("Número celular inválido");
+                response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+        } else if (key.getTypeKey() == TypeKeyEnum.EMAIL) {
+            Boolean valid = validateEmailRegex(key.getValueKey());
+            if (Boolean.FALSE.equals(valid)) {
+                response.setMessage("E-mail inválido");
+                response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+        } else if (key.getTypeKey() == TypeKeyEnum.CPF){
+            Boolean valid = validateCpfRegex(key.getValueKey());
+            if (Boolean.FALSE.equals(valid)) {
+                response.setMessage("CPF inválido");
+                response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+            } else {
+                key.setValueKey(key.getValueKey().replaceAll("[.-]", ""));
+            }
+        }
     }
 
     private Boolean validatePhoneRegex(String value) {

@@ -4,16 +4,15 @@ package com.casepix.pix.application.rest.controller;
 import com.casepix.pix.application.domain.service.PixService;
 import com.casepix.pix.application.mapper.KeyDomainMapper;
 import com.casepix.pix.application.rest.request.CreateKeyRequest;
+import com.casepix.pix.application.rest.request.UpdateKeyRequest;
 import com.casepix.pix.application.rest.response.CreateResponse;
-import com.casepix.pix.application.rest.response.PixResponse;
+import com.casepix.pix.application.rest.response.KeyResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/v1/pix")
@@ -29,16 +28,10 @@ public class PixController {
         return new ResponseEntity<>(response, response.getStatus());
     }
 
-//    @GetMapping
-//    public String findOrganizations(@Valid String teste, @RequestHeader HttpHeaders headers) {
-//
-//        return "true";
-//
-////        return ResponseEntity
-////                .ok()
-////                .header(HttpHeadersValue.CONTENT_RANGE.getName(), String.valueOf(pagedOrganizations.getTotal()))
-////                .header(HttpHeadersValue.ACCEPT_RANGES.getName(), acceptableRange)
-////                .header(HttpHeadersValue.TOTAL_PAGES.getName(), String.valueOf(pagedOrganizations.getTotalPages()))
-////                .body(organizationMapper.toOrganizationDtoResponses(pagedOrganizations.getContent()));
-//    }
+    @PutMapping
+    public ResponseEntity<Object> updateKey(
+            @Valid @RequestBody UpdateKeyRequest updateKeyRequest)  {
+        return pixService.updateKey(keyDomainMapper.toKey(updateKeyRequest));
+    }
+
 }

@@ -42,11 +42,13 @@ public class CreateKeyRequest {
     @Schema(type = "number", description = "Numero Agencia", example = "0001")
     @NotNull
     @Pattern(regexp = "[0-9]*")
+    @Size(max = 4)
     private String numberAgency;
 
     @Schema(type = "number", description = "Numero Conta", example = "84849122")
     @NotNull
     @Pattern(regexp = "[0-9]*")
+    @Size(max = 8)
     private String numberAccount;
 
     @Schema(type = "string", description = "Nome Correntista", example = "Joao")
