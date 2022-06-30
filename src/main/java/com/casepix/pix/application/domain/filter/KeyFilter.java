@@ -6,6 +6,8 @@ import lombok.Setter;
 @Setter
 @Getter
 public class KeyFilter {
+    private String id;
+
     private String typeKey;
 
     private String valueKey;
@@ -21,4 +23,6 @@ public class KeyFilter {
     private String accountHolderLastName;
 
     private String typePerson;
+
+    private String createdAt;
 }

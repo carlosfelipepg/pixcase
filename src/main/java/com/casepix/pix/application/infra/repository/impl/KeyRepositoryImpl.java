@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +20,6 @@ public class KeyRepositoryImpl implements KeyRepository {
 
     private final MongoDbSchoolRepository mongoDbSchoolRepository;
     private final MongoTemplate mongoTemplate;
-    public static final String CREATED_AT = "createdAt";
 
 
     @Override
@@ -33,6 +33,11 @@ public class KeyRepositoryImpl implements KeyRepository {
     @Override
     public List<Key> findKeysByFilter(KeyFilter filter) {
         var query = new Query();
+        Optional.ofNullable(filter.getCreatedAt())
+                .ifPresent(createdAt -> query.addCriteria(Criteria.where("createdAt").is(createdAt)));
+
+        Optional.ofNullable(filter.getId())
+                .ifPresent(id -> query.addCriteria(Criteria.where("id").is(id)));
         Optional.ofNullable(filter.getTypeKey())
                 .ifPresent(typeKey -> query.addCriteria(Criteria.where("typeKey").is(typeKey)));
         Optional.ofNullable(filter.getValueKey())

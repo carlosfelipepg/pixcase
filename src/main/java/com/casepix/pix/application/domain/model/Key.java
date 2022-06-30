@@ -14,6 +14,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.*;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -58,9 +60,5 @@ public class Key {
     @NotNull
     private TypePersonEnum typePerson;
 
-    @CreatedDate
-    private Instant createdAt;
-
-    @LastModifiedDate
-    private Instant updatedAt;
+    private String createdAt;
 }

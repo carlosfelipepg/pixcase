@@ -1,9 +1,12 @@
 package com.casepix.pix.application.rest.controller;
 
 
+import com.casepix.pix.application.domain.filter.KeyFilter;
+import com.casepix.pix.application.domain.model.Key;
 import com.casepix.pix.application.domain.service.PixService;
 import com.casepix.pix.application.mapper.KeyDomainMapper;
 import com.casepix.pix.application.rest.request.CreateKeyRequest;
+import com.casepix.pix.application.rest.request.KeyFilterRequest;
 import com.casepix.pix.application.rest.request.UpdateKeyRequest;
 import com.casepix.pix.application.rest.response.CreateResponse;
 import com.casepix.pix.application.rest.response.KeyResponse;
@@ -13,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/v1/pix")
@@ -32,6 +36,11 @@ public class PixController {
     public ResponseEntity<Object> updateKey(
             @Valid @RequestBody UpdateKeyRequest updateKeyRequest)  {
         return pixService.updateKey(keyDomainMapper.toKey(updateKeyRequest));
+    }
+
+    @GetMapping
+    public ResponseEntity<Object> findKeys(@Valid KeyFilterRequest filter)  {
+        return pixService.findKeys(keyDomainMapper.toKeyFilter(filter));
     }
 
 }

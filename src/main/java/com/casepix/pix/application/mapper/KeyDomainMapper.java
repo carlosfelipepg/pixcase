@@ -1,8 +1,10 @@
 package com.casepix.pix.application.mapper;
 
 import com.casepix.pix.application.domain.dto.KeyDto;
+import com.casepix.pix.application.domain.filter.KeyFilter;
 import com.casepix.pix.application.domain.model.Key;
 import com.casepix.pix.application.rest.request.CreateKeyRequest;
+import com.casepix.pix.application.rest.request.KeyFilterRequest;
 import com.casepix.pix.application.rest.request.UpdateKeyRequest;
 import com.casepix.pix.application.rest.response.KeyResponse;
 import lombok.RequiredArgsConstructor;
@@ -32,5 +34,9 @@ public class KeyDomainMapper {
 
     public KeyResponse toKeyResponse(Key key) {
         return modelMapper.map(key, KeyResponse.class);
+    }
+
+    public KeyFilter toKeyFilter(KeyFilterRequest filter) {
+        return modelMapper.map(filter, KeyFilter.class);
     }
 }

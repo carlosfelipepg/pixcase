@@ -7,6 +7,7 @@ import com.casepix.pix.application.domain.model.Key;
 import com.casepix.pix.application.domain.repository.KeyRepository;
 import com.casepix.pix.application.mapper.KeyDomainMapper;
 import com.casepix.pix.application.rest.response.CreateResponse;
+import com.casepix.pix.application.rest.response.FindResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.internal.constraintvalidators.hv.br.CPFValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -30,6 +34,8 @@ public class PixService {
 
     private CreateResponse response = new CreateResponse();
 
+    private final String now = LocalDate.now().toString();
+
     /**
      * Create pix key for the informed account holder
      *
@@ -37,6 +43,7 @@ public class PixService {
      * @return - Key creation status
      */
     public CreateResponse createKey(Key key) {
+        response = new CreateResponse();
         KeyFilter keyFilter = new KeyFilter();
         keyFilter.setNumberAccount(key.getNumberAccount());
         List<Key> keys = keyRepository.findKeysByFilter(keyFilter);
@@ -57,6 +64,7 @@ public class PixService {
 
         UUID uniqueId = UUID.randomUUID();
         key.setId(uniqueId.toString());
+        key.setCreatedAt(now);
         try {
             keyRepository.save(key);
         } catch (DuplicateKeyException e) {
@@ -94,6 +102,30 @@ public class PixService {
         keyRepository.save(savedKey);
 
         return new ResponseEntity<>(savedKey, HttpStatus.OK);
+    }
+
+    public ResponseEntity<Object> findKeys(KeyFilter filter) {
+        FindResponse findResponse = new FindResponse();
+
+        var verifyFieldsNull = Stream.of(
+                        filter.getValueKey(),
+                        filter.getTypeKey(),
+                        filter.getNumberAgency(),
+                        filter.getNumberAccount(),
+                        filter.getAccountHolderName(),
+                        filter.getCreatedAt())
+                .allMatch(Objects::isNull);
+
+        if (filter.getId() != null && !verifyFieldsNull) {
+            findResponse.setMessage("Filtros inválidos");
+            return new ResponseEntity<>(findResponse, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        List<Key> listFields = keyRepository.findKeysByFilter(filter);
+        if ((long) listFields.size() == 0){
+            findResponse.setMessage("Chave não encontrada");
+            return new ResponseEntity<>(findResponse, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(listFields, HttpStatus.OK);
     }
 
     private void validateTypeKey(Key key) {

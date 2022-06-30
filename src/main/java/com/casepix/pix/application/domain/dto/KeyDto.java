@@ -30,7 +30,5 @@ public class KeyDto {
 
     private TypePersonEnum typePerson;
 
-    private Instant createdAt;
-
-    private Instant updatedAt;
+    private String createdAt;
 }
